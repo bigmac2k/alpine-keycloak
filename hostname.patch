@@ -1,0 +1,13 @@
+diff --git a/server/tools/docker-entrypoint.sh b/server/tools/docker-entrypoint.sh
+index e2a33bb..ace6c9a 100755
+--- a/server/tools/docker-entrypoint.sh
++++ b/server/tools/docker-entrypoint.sh
+@@ -77,7 +77,7 @@ fi
+ ########################
+ 
+ if [[ -z ${BIND:-} ]]; then
+-    BIND=$(hostname --all-ip-addresses)
++    BIND=$(ip -o addr | awk 'BEGIN { ORS=" " }; !/^[0-9]*: ?lo|link\/ether/ {gsub("/", " "); print $4}')
+ fi
+ if [[ -z ${BIND_OPTS:-} ]]; then
+     for BIND_IP in $BIND
