@@ -26,15 +26,15 @@ ARG TOOLS_BRANCH=93bca7035450092f60e5c62cbd8aa30ddeebfc89
 ARG WEBAUTHN_BRANCH=612c6bcdb0cc1a1da87703a97195a2541d257eff
 
 ADD hostname.patch ./
-RUN git clone --depth 1 https://github.com/keycloak/keycloak-containers.git && cd keycloak-containers && git checkout ${TOOLS_BRANCH} && git apply < ../hostname.patch && cd .. && rm hostname.patch && mv keycloak-containers/server/tools . && rm -rf keycloak-containers
+RUN git clone https://github.com/keycloak/keycloak-containers.git && cd keycloak-containers && git checkout ${TOOLS_BRANCH} && git apply < ../hostname.patch && cd .. && rm hostname.patch && mv keycloak-containers/server/tools . && rm -rf keycloak-containers
 RUN /opt/jboss/tools/build-keycloak.sh
-#RUN mkdir /build && cd /build && git clone --depth 1 https://github.com/webauthn4j/keycloak-webauthn-authenticator.git . && git checkout ${WEBAUTHN_BRANCH}
-#WORKDIR /build
-#RUN mvn install -Dmaven.test.skip -DskipTests
+RUN mkdir /build && cd /build && git clone https://github.com/webauthn4j/keycloak-webauthn-authenticator.git . && git checkout ${WEBAUTHN_BRANCH}
+WORKDIR /build
+RUN mvn install -Dmaven.test.skip -DskipTests
 
 FROM base
 COPY --from=build /opt/jboss /opt/jboss
-#COPY --from=build /build/webauthn4j-ear/target/keycloak-webauthn4j-ear-*.ear /opt/jboss/keycloak/standalone/deployments/
+COPY --from=build /build/webauthn4j-ear/target/keycloak-webauthn4j-ear-*.ear /opt/jboss/keycloak/standalone/deployments/
 RUN chown -R jboss:jboss /opt/jboss
 
 USER 1000
