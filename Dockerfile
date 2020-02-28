@@ -23,18 +23,13 @@ ARG GIT_REPO
 ARG GIT_BRANCH
 ARG KEYCLOAK_DIST=https://downloads.jboss.org/keycloak/$KEYCLOAK_VERSION/keycloak-$KEYCLOAK_VERSION.tar.gz
 ARG TOOLS_BRANCH=9.0.0
-ARG WEBAUTHN_BRANCH=612c6bcdb0cc1a1da87703a97195a2541d257eff
 
 ADD hostname.patch ./
 RUN git clone https://github.com/keycloak/keycloak-containers.git && cd keycloak-containers && git checkout ${TOOLS_BRANCH} && git apply < ../hostname.patch && cd .. && rm hostname.patch && mv keycloak-containers/server/tools . && rm -rf keycloak-containers
 RUN /opt/jboss/tools/build-keycloak.sh
-RUN mkdir /build && cd /build && git clone https://github.com/webauthn4j/keycloak-webauthn-authenticator.git . && git checkout ${WEBAUTHN_BRANCH}
-WORKDIR /build
-RUN mvn install -Dmaven.test.skip -DskipTests
 
 FROM base
 COPY --from=build /opt/jboss /opt/jboss
-COPY --from=build /build/webauthn4j-ear/target/keycloak-webauthn4j-ear-*.ear /opt/jboss/keycloak/standalone/deployments/
 RUN chown -R jboss:jboss /opt/jboss
 
 USER 1000
